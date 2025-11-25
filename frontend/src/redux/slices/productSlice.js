@@ -1,12 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit'; 
+import { createSlice } from '@reduxjs/toolkit';
 import productAPI from '../../mocks/product';
-import { reducer } from './userSlice';
 
 const initialState = {
-    productList: { products: [], loading: false, error: null, page : 0, pages : 0 },
-    productDetails : { product : { reviews: []}, loading: false, error: null},
-    createReview: { loading: false, error: null, success: false},
-    topRatedProducts : {products: [], loading: false, error: null},
+    productList: { products: [], loading: false, error: null, page: 0, pages: 0 },
+    productDetails: { product: { reviews: [] }, loading: false, error: null },
+    createReview: { loading: false, error: null, success: false },
+    topRatedProducts: { products: [], loading: false, error: null },
 };
 
 const productSlice = createSlice({
@@ -35,14 +34,14 @@ const productSlice = createSlice({
             state.productDetails.loading = false;
             state.productDetails.product = action.payload;
         },
-        productDetailsFailure(state, action){
+        productDetailsFailure(state, action) {
             state.productDetails.loading = false;
             state.productDetails.error = action.payload;
         },
         createReviewRequest(state) {
             state.createReview.loading = true;
             state.createReview.error = null;
-            state.createReview.success = false ;
+            state.createReview.success = false;
         },
         createReviewSuccess(state) {
             state.createReview.loading = false;
@@ -52,21 +51,20 @@ const productSlice = createSlice({
             state.createReview.loading = false;
             state.createReview.error = action.payload;
         },
-        productTopRequest(state){
+        productTopRequest(state) {
             state.topRatedProducts.loading = true;
             state.topRatedProducts.error = null;
         },
         productTopSuccess(state, action) {
             state.topRatedProducts.loading = false;
-            state.topRatedProducts.products =action.payload;
+            state.topRatedProducts.products = action.payload;
         },
         productTopFailure(state, action) {
-            state.topRatedProducts.loading =false;
+            state.topRatedProducts.loading = false;
             state.topRatedProducts.error = action.payload;
         },
     },
 });
-
 
 export const {
     productListRequest,
@@ -83,7 +81,7 @@ export const {
     productTopFailure,
 } = productSlice.actions;
 
-export const fetchProductList = (keyword, pageNumber= '') =>async (dispatch)=> {
+export const fetchProductList = (keyword, pageNumber = '') => async (dispatch) => {
     try {
         dispatch(productListRequest());
         const productList = await productAPI.getProductList(keyword, pageNumber);
@@ -93,20 +91,20 @@ export const fetchProductList = (keyword, pageNumber= '') =>async (dispatch)=> {
     }
 };
 
-export const fetchProductDetails = (id) =>async (dispatch) => {
+export const fetchProductDetails = (id) => async (dispatch) => {
     try {
         dispatch(productDetailsRequest());
         const productDetails = await productAPI.getProductDetails(id);
-        dispatch(productDetailsSuccess(productDetails));  
+        dispatch(productDetailsSuccess(productDetails));
     } catch (error) {
         dispatch(productDetailsFailure(error.response?.data.detail || error.message));
     }
 };
 
-export const createReview = (productId, review) =>async (dispatch) =>{
+export const createReview = (productId, review) => async (dispatch) => {
     try {
         dispatch(createReviewRequest());
-        
+
         await productAPI.createProductReview(productId, review);
         dispatch(createReviewSuccess());
     } catch (error) {
@@ -118,7 +116,7 @@ export const fetchTopRatedProducts = () => async (dispatch) => {
     try {
         dispatch(productTopRequest());
         const topRatedProducts = await productAPI.getTopRatedProducts();
-        dispatch(productTopSuccess());
+        dispatch(productTopSuccess(topRatedProducts));
     } catch (error) {
         dispatch(productTopFailure(error.response?.data.detail || error.message));
     }
@@ -126,4 +124,3 @@ export const fetchTopRatedProducts = () => async (dispatch) => {
 
 export const { reducer } = productSlice;
 export default productSlice;
-

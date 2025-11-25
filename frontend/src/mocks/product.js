@@ -64,4 +64,4 @@ class ProductAPI {
 }
 
 const productAPI = new ProductAPI();
-export default productAPI;
+export default productAPI;  
