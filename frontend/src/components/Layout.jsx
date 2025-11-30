@@ -1,128 +1,203 @@
-import { Link } from "react-router-dom"
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext"; // ✅ CART CONTEXT
 
-const Layout = ({children})=>{
-    const menus = [
-        {
-            label : "Home",
-            href: "/"
-        },
-        {
-            label : "Products",
-            href: "/products"
-        },
-        {
-            label : "Category",
-            href: "/category"
-        },
-        {
-            label : "Contact us",
-            href: "/contact-us"
-        },
-    ]
-    return(
-        <div>
-            <nav className="sticky top-0 left-0 shadow-lg bg-white">
-                <div className="w-10/12 mx-auto flex items-center justify-between">
-                    <img
-                        src="/logo.png" 
-                        className="w-[180px]"    
-                    />
-                    <ul className="flex gap-6 items-center ">
-                        {
-                            menus.map((item, index)=>(
-                                <li key={index}>
-                                    <Link 
-                                        to={item.href}
-                                        className="block py-6 text-center hover:bg-blue-600 w-[100px] hover:text-white"
-                                    >{item.label}</Link>
-                                </li>
-                            ))
-                        }
-                        <Link
-                            className="block py-6 text-center hover:bg-blue-600 w-[100px] hover:text-white"
-                            to="/login"
-                        >Login</Link>
-                        
-                        <Link
-                            className="bg-cyan-600 text-white block py-3 px-10 text-md font-semibold text-center hover:bg-[#4776af] hover:text-white"
-                            to="/signup"
-                        >Signup</Link>
-                    </ul>
-                </div>
-            </nav>
+const Layout = ({ children }) => {
+const [open, setOpen] = useState(false);
 
-            <div>
-                {children}
-            </div>
-                        
-            <footer className="bg-cyan-500 py-16">
-                <div className="w-10/12 mx-auto grid grid-cols-4 ">
-                
-                    <div>
-                        <h1 className="text-white font-semibold text-2xl mb-3">Website Links</h1>
-                        <ul className="space-y-2 text-slate-50">
-                            {
-                                menus.map((item, index)=>(
-                                    <li key={index}>
-                                        <Link to={item.href}>{item.label}</Link>
-                                    </li>
-                                ))
-                            }
-                            <li><Link to="/login">Login</Link></li>
-                            <li><Link to="/signup">Signup</Link></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h1 className="text-white font-semibold text-2xl mb-3">Follow us</h1>
-                        <ul className="space-y-2 text-slate-50">
-                            <li><Link to="/">Facebook</Link></li>
-                            <li><Link to="/">Youtube</Link></li>
-                            <li><Link to="/">Instagram</Link></li>
-                            <li><Link to="/">LinkedIn</Link></li>
-                            <li><Link to="/">Twitter</Link></li>
-                        </ul>
-                    </div>
+const { totalItems } = useCart(); // ✅ CART COUNT
 
-                    <div className="pr-8">
-                        <h1 className="text-white font-semibold text-2xl mb-3">Brand Details</h1>
-                        <p className="text-slate-50 mb-6">Lorem ipsum dolor sit amet consectetur adipisicing elit. !</p>
-                        <img
-                            src="/logo1.png" 
-                            className="w-[100px]"    
-                        />
-                    </div>
-                    <div>
-                        <h1 className="text-white font-semibold text-2xl mb-3">Contact us</h1>
-                        <form className="space-y-4">
-                            <input
-                                required
-                                name="fullname"
-                                className="bg-white w-full rounded p-3"
-                                placeholder="Your Name"
-                            />
-                            <input
-                                required
-                                type="email"
-                                name="email"
-                                className="bg-white w-full rounded p-3"
-                                placeholder="Enter email id"
-                            />
-                            <textarea
-                                required
-                                name="message"
-                                className="bg-white w-full rounded p-3"
-                                placeholder="Message"
-                                rows={3}
-                            />
+const menus = [
+    { label: "Home", href: "/" },
+    { label: "Products", href: "/products" },
+    { label: "About", href: "/about" },
+    { label: "Contact us", href: "/contact-us" },
+];
 
-                            <button className="bg-black text-white py-3 px-6 rounded">Submit</button>
-                        </form>
-                    </div>
-                </div>
-            </footer>
+return (
+    <div>
+    {/* ================= NAVBAR ================= */}
+    <nav className="sticky top-0 left-0 shadow-lg bg-white z-50">
+        <div className="w-11/12 mx-auto flex items-center justify-between py-3">
 
+        {/* LOGO */}
+        <Link to="/">
+            <img
+            src="/logo.png"
+            alt="site-logo"
+            className="w-[120px] sm:w-[150px] md:w-[180px] h-auto"
+            />
+        </Link>
+
+        {/* ============ DESKTOP MENU ============ */}
+        <ul className="hidden sm:flex gap-4 items-center">
+
+            {menus.map((item, index) => (
+            <li key={index}>
+                <Link
+                to={item.href}
+                className="block py-2 px-3 rounded-md text-sm hover:bg-blue-600 hover:text-white transition-all"
+                >
+                {item.label}
+                </Link>
+            </li>
+            ))}
+
+            
+             {/* CART ICON + BADGE */}
+            <Link
+            to="/cart"
+            className="relative block py-2 px-3 rounded-md text-xl hover:bg-blue-600 hover:text-white transition-all"
+            >
+            🛒
+            {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1.5 rounded-full">
+                {totalItems}
+                </span>
+            )}
+            </Link>
+
+            {/* LOGIN */}
+            <Link
+            to="/login"
+            className="block py-2 px-3 rounded-md text-sm hover:bg-blue-600 hover:text-white transition-all"
+            >
+            Login
+            </Link>
+
+            {/* SIGNUP */}
+            <Link
+            to="/signup"
+            className="bg-cyan-600 text-white py-2 px-4 text-sm font-semibold rounded-md hover:bg-[#4776af] transition-all"
+            >
+            Signup
+            </Link>
+
+        
+        </ul>
+
+        {/* MOBILE MENU BUTTON */}
+        <button
+            className="sm:hidden text-3xl p-2"
+            onClick={() => setOpen(!open)}
+        >
+            {open ? "✕" : "☰"}
+        </button>
         </div>
-    )
-}
 
-export default Layout
+        {/* ============ MOBILE DROPDOWN MENU ============ */}
+        {open && (
+        <div className="sm:hidden bg-white shadow-md">
+            <ul className="flex flex-col p-3 space-y-2">
+
+            {menus.map((item, index) => (
+                <li key={index}>
+                <Link
+                    to={item.href}
+                    className="block py-2 px-2 rounded-md text-base"
+                    onClick={() => setOpen(false)}
+                >
+                    {item.label}
+                </Link>
+                </li>
+            ))}
+
+            <Link
+                to="/login"
+                className="block py-2 px-2"
+                onClick={() => setOpen(false)}
+            >
+                Login
+            </Link>
+
+            <Link
+                to="/signup"
+                className="block py-2 px-2 bg-cyan-600 text-white rounded-md text-center"
+                onClick={() => setOpen(false)}
+            >
+                Signup
+            </Link>
+
+            {/* MOBILE CART ICON */}
+            <Link
+                to="/cart"
+                className="flex justify-between items-center py-2 px-2 rounded-md text-base"
+                onClick={() => setOpen(false)}
+            >
+                <span>🛒 Cart</span>
+                {totalItems > 0 && (
+                <span className="bg-red-600 text-white text-xs px-2 rounded-full">
+                    {totalItems}
+                </span>
+                )}
+            </Link>
+            </ul>
+        </div>
+        )}
+    </nav>
+
+    {/* ================= PAGE CONTENT ================= */}
+    <div>{children}</div>
+
+    {/* ================= FOOTER ================= */}
+    <footer className="bg-cyan-500 py-16 mt-10">
+        <div className="w-11/12 mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
+
+        {/* COLUMN 1 */}
+        <div>
+            <h1 className="text-white font-semibold text-xl sm:text-2xl mb-3">
+            Website Links
+            </h1>
+            <ul className="space-y-2 text-slate-50">
+            {menus.map((item, index) => (
+                <li key={index}><Link to={item.href}>{item.label}</Link></li>
+            ))}
+            <li><Link to="/login">Login</Link></li>
+            <li><Link to="/signup">Signup</Link></li>
+            </ul>
+        </div>
+
+        {/* COLUMN 2 */}
+        <div>
+            <h1 className="text-white font-semibold text-xl sm:text-2xl mb-3">
+            Follow us
+            </h1>
+            <ul className="space-y-2 text-slate-50">
+            <li><Link to="/">Facebook</Link></li>
+            <li><Link to="/">Youtube</Link></li>
+            <li><Link to="/">Instagram</Link></li>
+            <li><Link to="/">LinkedIn</Link></li>
+            <li><Link to="/">Twitter</Link></li>
+            </ul>
+        </div>
+
+        {/* COLUMN 3 */}
+        <div className="pr-8">
+            <h1 className="text-white font-semibold text-xl sm:text-2xl mb-3">
+            Brand Details
+            </h1>
+            <p className="text-slate-50 mb-6">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            </p>
+            <img src="/logo1.png" alt="brand-logo" className="w-[100px]" />
+        </div>
+
+        {/* COLUMN 4 */}
+        <div>
+            <h1 className="text-white font-semibold text-xl sm:text-2xl mb-3">
+            Contact Us
+            </h1>
+            <form className="space-y-4">
+            <input required name="fullname" className="bg-white w-full rounded p-3 text-sm" placeholder="Your Name" />
+            <input required type="email" name="email" className="bg-white w-full rounded p-3 text-sm" placeholder="Enter email id" />
+            <textarea required name="message" className="bg-white w-full rounded p-3 text-sm" placeholder="Message" rows={3} />
+            <button className="bg-black text-white py-3 px-6 rounded">Submit</button>
+            </form>
+        </div>
+        </div>
+    </footer>
+    </div>
+);
+};
+
+export default Layout;

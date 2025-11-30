@@ -164,5 +164,4 @@ export const logout = () => (dispatch) =>{
     dispatch(userSlice.actions.logoutSuccess());
 };
 
-export const { reducer } = userSlice;
-export default userSlice;
+export default userSlice.reducer;

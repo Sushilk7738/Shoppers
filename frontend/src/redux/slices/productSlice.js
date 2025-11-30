@@ -81,11 +81,13 @@ export const {
     productTopFailure,
 } = productSlice.actions;
 
-export const fetchProductList = (keyword, pageNumber = '') => async (dispatch) => {
+export const fetchProductList = (keyword="", pageNumber = "") => async (dispatch) => {
     try {
         dispatch(productListRequest());
-        const productList = await productAPI.getProductList(keyword, pageNumber);
-        dispatch(productListSuccess(productList));
+        // const productList = await productAPI.getProductList(keyword, pageNumber);
+        const res = await fetch(`http://127.0.0.1:8000/api/products/?search=${keyword}&page=${pageNumber}`);
+        const data = await res.json();
+        dispatch(productListSuccess(data));
     } catch (error) {
         dispatch(productListFailure(error.response?.data.detail || error.message));
     }
@@ -122,5 +124,4 @@ export const fetchTopRatedProducts = () => async (dispatch) => {
     }
 };
 
-export const { reducer } = productSlice;
-export default productSlice;
+export default productSlice.reducer;

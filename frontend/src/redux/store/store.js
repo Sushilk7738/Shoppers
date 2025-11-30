@@ -3,7 +3,7 @@ import {
     useSelector as useReduxSelector,
 } from 'react-redux';
 
-import { configureStore,applyMiddleware } from '@reduxjs/toolkit';
+import { configureStore} from '@reduxjs/toolkit';
 import { rootReducer } from './rootReducer';
 
 const store = configureStore({

@@ -165,5 +165,4 @@ export const deliverOrder = (orderId) => async(dispatch) =>{
     }
 };
 
-export const { reducer } = orderSlice;
-export default orderSlice;
+export default orderSlice.reducer;
