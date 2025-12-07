@@ -87,4 +87,10 @@ class OrderSerializer(serializers.ModelSerializer):
         serializer = UserSerializer(items, many = False)
         return serializer.data
         
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = "__all__"
+
         

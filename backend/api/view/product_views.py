@@ -32,17 +32,10 @@ def getProducts(request):
             page = int(page)
         except ValueError:
             page = 1
-    paginator = Paginator(products, 8)
+    products = Product.objects.all().order_by("-_id")
+    serializer = ProductSerializer(products, many=True)
+    return Response({"products": serializer.data})
 
-    try:
-        products = paginator.page(page)
-    except PageNotAnInteger:
-        products = paginator.page(page)
-    except EmptyPage:
-        products = paginator.page(paginator.num_pages)
-
-    serializer = ProductSerializer(products, many = True)
-    return Response({'products' : serializer.data, 'page' : page, 'pages': paginator.num_pages })
             
 
 #Top Products
@@ -55,8 +48,8 @@ def getTopProducts(request):
 #Get single products
 @api_view(['GET'])
 def getProduct(request, pk):
-    product = Product.objects.get(_id = pk)
-    serializer = ProductSerializer(product, many = False)
+    product = Product.objects.get(_id=pk)
+    serializer = ProductSerializer(product, many=False)
     return Response(serializer.data)
 
 @api_view(['POST'])
