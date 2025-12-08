@@ -30,7 +30,7 @@ const handleChange = (e) => {
 
 const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     dispatch(loginStart());
 
     try {
@@ -38,27 +38,27 @@ const handleSubmit = async (e) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-        username: email, // Django expects username
+        username: email, 
         password: password,
         }),
     });
 
     const data = await response.json();
+    console.log("LOGIN RESPONSE:", response.status, data);
 
     if (response.ok) {
-        // ⭐ JWT tokens
+        // JWT tokens
         const token = data.access;
         const refresh = data.refresh;
 
-        // ⭐ Full user object (Django returns)
+        // Full user object (Django returns)
         const user = {
         id: data.id,
-        name: data.name,
+        name: data.name || data.username,
         username: data.username,
         email: data.email,
         };
 
-        // ⭐ Save to local storage
         localStorage.setItem("token", token);
         localStorage.setItem("refresh", refresh);
         localStorage.setItem("userInfo", JSON.stringify(user));

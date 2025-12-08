@@ -5,6 +5,8 @@ import Cart from "./pages/Cart.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Checkout from "./pages/Checkout.jsx";
+import About from "./pages/About.jsx";
+import Contact from "./pages/Contact.jsx";
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
       <Route path="/checkout" element={<Checkout/>} />
       <Route path="/login" element={<Login/>} />
       <Route path="/signup" element={<Signup/>} />
+      <Route path="/about" element={<About/>} />
+      <Route path="/contact-us" element={<Contact/>} />
       
       
     </Routes>

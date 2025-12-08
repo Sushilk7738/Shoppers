@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Layout from "../components/Layout";
 import "animate.css";
@@ -6,111 +6,158 @@ import { useToast } from "../context/ToastContext";
 import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
-const { showToast } = useToast();
-const navigate = useNavigate();
+    const { showToast } = useToast();
+    const navigate = useNavigate();
 
-// ===== CART FROM REDUX (single source of truth) =====
-const cart = useSelector((state) => state.cart.cartItems) || [];
+    // ===== CART FROM REDUX (single source of truth) =====
+    const cart = useSelector((state) => state.cart.cartItems) || [];
 
-// If user opens checkout with empty cart → block them
-if (!cart || cart.length === 0) {
-    return (
-    <Layout>
-        <div className="p-10 text-center text-xl font-semibold">
-        Your cart is empty.  
-        <button
-            className="block mt-4 bg-cyan-600 text-white px-4 py-2 rounded"
-            onClick={() => navigate("/")}
-        >
-            Continue Shopping
-        </button>
-        </div>
-    </Layout>
-    );
-}
-
-const cartTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-// ===== USER TOKEN =====
-const token = localStorage.getItem("token");
-
-const [form, setForm] = useState({
-    fullName: "",
-    mobile: "",
-    address: "",
-});
-
-const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-// ===== CREATE ORDER (backend) =====
-const createOrder = async () => {
-    if (!token) {
-    showToast("Please login before checkout");
-    return;
+    // If user opens checkout with empty cart → block them
+    if (!cart || cart.length === 0) {
+        return (
+        <Layout>
+            <div className="p-10 text-center text-xl font-semibold">
+            Your cart is empty.  
+            <button
+                className="block mt-4 bg-cyan-600 text-white px-4 py-2 rounded"
+                onClick={() => navigate("/")}
+            >
+                Continue Shopping
+            </button>
+            </div>
+        </Layout>
+        );
     }
 
-    if (!form.fullName || !form.mobile || !form.address) {
-    showToast("Please fill all fields");
-    return;
-    }
+    const cartTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-    try {
-    const response = await fetch(
-        "http://127.0.0.1:8000/api/orders/create-order/",
-        {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ amount: cartTotal }),
+    // ===== USER TOKEN =====
+    const tokenFromStore = useSelector((state) => state.user.token);
+
+    const token =
+    tokenFromStore ||
+    (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+
+    
+    
+    const [form, setForm] = useState({
+        fullName: "",
+        mobile: "",
+        address: "",
+    });
+
+    const handleChange = (e) =>
+        setForm({ ...form, [e.target.name]: e.target.value });
+
+
+    const verifyPayment = async (response) => {
+        console.log("TOKEN SENT TO VERIFY:", token);
+        const paymentData = {
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            amount: cartTotal,
+            address: form,
+            cartItems: cart,
+        };
+
+        try {
+            const res = await fetch("http://127.0.0.1:8000/api/orders/verify-payment/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: token ? `Bearer ${token}` : "",
+            },
+            body: JSON.stringify(paymentData),
+            });
+
+            const data = await res.json();
+            console.log("VERIFY RESPONSE:", data);
+
+            if (res.ok) {
+            showToast("Order Completed Successfully!");
+            navigate("/"); // later we will change this to Order Success Page
+            } else {
+            showToast(data.detail || "Verification failed");
+            }
+        } catch (error) {
+            console.log("Verify error:", error);
         }
-    );
+        };
 
-    const order = await response.json();
+    
+    
+    
+    
+    // ===== CREATE ORDER (backend) =====
+    const createOrder = async () => {
+        if (!token) {
+        showToast("Please login before checkout");
+        return;
+        }
 
-    if (!response.ok) {
-        showToast(order.detail || "Order creation failed");
+        if (!form.fullName || !form.mobile || !form.address) {
+        showToast("Please fill all fields");
+        return;
+        }
+
+        try {
+        const response = await fetch(
+            "http://127.0.0.1:8000/api/orders/create-order/",
+            {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ amount: cartTotal }),
+            }
+        );
+
+        const order = await response.json();
+
+        if (!response.ok) {
+            showToast(order.detail || "Order creation failed");
+            return;
+        }
+
+        openRazorpay(order);
+        } catch (err) {
+        console.log(err);
+        showToast("Something went wrong!");
+        }
+    };
+
+    // ===== RAZORPAY PAYMENT WINDOW =====
+    if (!window.Razorpay) {
+        alert("Razorpay SDK failed to load. Check your internet or script tag.");
         return;
     }
 
-    openRazorpay(order);
-    } catch (err) {
-    console.log(err);
-    showToast("Something went wrong!");
-    }
-};
+    const openRazorpay = (order) => {
+        console.log("RAZORPAY KEY FROM BACKEND:", order.key);
+        const options = {
+            key: order.key,
+            amount: order.amount,
+            currency: "INR",
+            order_id: order.id,
+            name: "Shoppers Store",
+            description: "Order Payment",
 
-// ===== RAZORPAY PAYMENT WINDOW =====
-if (!window.Razorpay) {
-    alert("Razorpay SDK failed to load. Check your internet or script tag.");
-    return;
-}
+            handler: function (response) {
+                console.log("Payment Success:", response);
+                verifyPayment(response);
+        },
 
-const openRazorpay = (order) => {
-    const options = {
-    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-    amount: order.amount,
-    currency: "INR",
-    order_id: order.id,
-    name: "Shoppers Store",
-    description: "Order Payment",
+        prefill: {
+            name: form.fullName,
+            contact: form.mobile,
+        },
+        };
 
-    handler: function (response) {
-        console.log("Payment Success:", response);
-        showToast("Payment successful!");
-    },
-
-    prefill: {
-        name: form.fullName,
-        contact: form.mobile,
-    },
+        const rzp = new window.Razorpay(options);
+        rzp.open();
     };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-};
 
 return (
     <Layout>
@@ -206,6 +253,7 @@ return (
             <span className="text-cyan-700">₹{cartTotal}</span>
             </p>
 
+            
             <button
             onClick={createOrder}
             className="w-full bg-cyan-600 text-white py-3 rounded-lg hover:bg-cyan-700 transition shadow-md"
